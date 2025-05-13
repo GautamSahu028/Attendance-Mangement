@@ -7,6 +7,7 @@ import AttendanceImage from "./AttendanceImage";
 import AttendanceResults from "./AttendanceResults";
 import EmptyState from "./EmptyState";
 import StatusMessage from "./StatusMessage";
+import CameraComponent from "./CameraComponent";
 
 function AttendanceComponent() {
   const [uploadedImage, setUploadedImage] = useState<File | null>(null);
@@ -15,6 +16,7 @@ function AttendanceComponent() {
   const [attendanceStatus, setAttendanceStatus] = useState("none"); // "none", "uploaded", "processed"
   const [attendanceResults, setAttendanceResults] = useState<string[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isCameraOpen, setIsCameraOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   // Get today's date in a readable format
@@ -46,23 +48,53 @@ function AttendanceComponent() {
       return;
     }
 
-    setUploadedImage(file);
-    setAttendanceStatus("uploaded"); // Set status to uploaded
+    handleImageSelected(file);
+  }
 
-    // Create image preview
-    const reader = new FileReader();
-    reader.onload = () => {
-      setImagePreview(reader.result as string);
-    };
-    reader.readAsDataURL(file);
+  // Common function to handle image from file input or camera
+  function handleImageSelected(file: File, preview?: string) {
+    setUploadedImage(file);
+    setAttendanceStatus("uploaded");
+
+    // Create image preview if not provided
+    if (preview) {
+      setImagePreview(preview);
+    } else {
+      const reader = new FileReader();
+      reader.onload = () => {
+        setImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
 
     // Show success message
-    alert("Image has been successfully uploaded!");
+    alert(
+      preview
+        ? "Image has been successfully captured!"
+        : "Image has been successfully uploaded!"
+    );
   }
 
   // Handle click on the empty state container
   function handleEmptyStateClick() {
     fileInputRef.current?.click();
+  }
+
+  // Open camera
+  function openCamera() {
+    setIsCameraOpen(true);
+    setError(null);
+  }
+
+  // Handle camera capture
+  function handleCameraCapture(capturedFile: File, preview: string) {
+    setIsCameraOpen(false);
+    handleImageSelected(capturedFile, preview);
+  }
+
+  // Handle camera close
+  function handleCameraClose() {
+    setIsCameraOpen(false);
   }
 
   // Process attendance report
@@ -91,7 +123,7 @@ function AttendanceComponent() {
         setIsProcessing(false);
       }
     } else {
-      alert("Please upload an attendance image first.");
+      alert("Please upload or capture an attendance image first.");
     }
   }
 
@@ -116,8 +148,18 @@ function AttendanceComponent() {
       {/* Error message */}
       {error && <ErrorMessage message={error} />}
 
+      {/* Camera component */}
+      {isCameraOpen && (
+        <div className="mt-8">
+          <CameraComponent
+            onCapture={handleCameraCapture}
+            onClose={handleCameraClose}
+          />
+        </div>
+      )}
+
       {/* Display uploaded image and results */}
-      {uploadedImage && imagePreview && (
+      {uploadedImage && imagePreview && !isCameraOpen && (
         <div className="mt-8 border rounded-lg p-6 bg-white shadow-sm">
           <h2 className="text-xl font-semibold mb-4">Attendance Image</h2>
 
@@ -149,8 +191,41 @@ function AttendanceComponent() {
       )}
 
       {/* Empty state when no image is uploaded */}
-      {!uploadedImage && !error && (
-        <EmptyState onClick={handleEmptyStateClick} />
+      {!uploadedImage && !isCameraOpen && !error && (
+        <div className="mt-8 relative border border-dashed border-gray-300 rounded-lg p-6">
+          {/* Camera button positioned at top right */}
+          <div className="absolute top-4 right-4">
+            <button
+              onClick={openCamera}
+              className="flex items-center px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-5 w-5 mr-2"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"
+                />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"
+                />
+              </svg>
+              Open Camera
+            </button>
+          </div>
+
+          {/* Main empty state content */}
+          <EmptyState onClick={handleEmptyStateClick} />
+        </div>
       )}
 
       {/* Future Scope Section */}

@@ -29,7 +29,7 @@ const EmptyState: React.FC<EmptyStateProps> = ({ onClick }) => {
         Begin Attendance Tracking
       </h3>
       <p className="text-gray-600 mb-6">
-        Upload an image to identify and record attendees
+        Click to upload an image to identify and record attendees
       </p>
 
       <div className="bg-white p-5 rounded-lg border border-gray-200 shadow-sm">

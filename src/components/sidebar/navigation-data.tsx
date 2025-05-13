@@ -1,6 +1,6 @@
 import {
   Home,
-  // LayoutDashboard,
+  LayoutDashboard,
   // Users,
   // Settings,
   // FileText,
@@ -19,12 +19,12 @@ export const navigationItems: SidebarItemType[] = [
     path: "/",
     active: true,
   },
-  // {
-  //   id: 'dashboard',
-  //   label: 'Dashboard',
-  //   icon: <LayoutDashboard />,
-  //   path: '/dashboard',
-  // },
+  {
+    id: "management",
+    label: "Management",
+    icon: <LayoutDashboard />,
+    path: "/management",
+  },
   // {
   //   id: 'analytics',
   //   label: 'Analytics',
