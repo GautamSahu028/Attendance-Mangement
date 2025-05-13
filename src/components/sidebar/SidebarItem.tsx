@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { ChevronDown, ChevronRight } from "lucide-react";
+import { Link, useLocation } from "react-router-dom";
 import { SidebarItemType } from "./types";
 
 interface SidebarItemProps {
@@ -8,64 +9,80 @@ interface SidebarItemProps {
 }
 
 const SidebarItem: React.FC<SidebarItemProps> = ({ item, isExpanded }) => {
+  const location = useLocation();
   const [isOpen, setIsOpen] = useState(false);
   const hasChildren = item.children && item.children.length > 0;
-
-  const toggleOpen = () => {
-    if (hasChildren) {
-      setIsOpen(!isOpen);
-    }
-  };
+  const isActive = location.pathname === item.path;
 
   return (
     <li>
-      <div
-        className={`
-          flex items-center p-2 rounded-md cursor-pointer
-          ${item.active ? "bg-blue-50 text-blue-700" : "hover:bg-gray-100"} 
-          transition-colors duration-200
-        `}
-        onClick={toggleOpen}
-      >
-        {item.icon && (
-          <div className="mr-2">
-            {React.cloneElement(item.icon, {
-              size: 20,
-              className: item.active ? "text-blue-700" : "text-gray-600",
-            })}
-          </div>
-        )}
-
-        {isExpanded && (
-          <div className="flex justify-between items-center w-full">
-            <span
-              className={`text-sm font-medium ${
-                item.active ? "text-blue-700" : "text-gray-700"
-              }`}
-            >
-              {item.label}
+      {hasChildren ? (
+        <div className="space-y-1">
+          <button
+            onClick={() => setIsOpen(!isOpen)}
+            className={`
+              flex items-center w-full px-3 py-2 rounded-md transition-colors
+              ${isActive ? "bg-blue-50 text-blue-700" : "hover:bg-gray-100"}
+            `}
+          >
+            <span className="flex items-center">
+              <span className="mr-3">{item.icon}</span>
+              {isExpanded && (
+                <span className="transition-opacity duration-200">
+                  {item.label}
+                </span>
+              )}
             </span>
-
-            {hasChildren && (
-              <div className="ml-auto">
+            {isExpanded && hasChildren && (
+              <span className="ml-auto">
                 {isOpen ? (
                   <ChevronDown size={16} />
                 ) : (
                   <ChevronRight size={16} />
                 )}
-              </div>
+              </span>
             )}
-          </div>
-        )}
-      </div>
+          </button>
 
-      {/* Render children if expanded and open */}
-      {hasChildren && isOpen && isExpanded && (
-        <ul className="ml-6 mt-1 space-y-1">
-          {(item.children ?? []).map((child) => (
-            <SidebarItem key={child.id} item={child} isExpanded={isExpanded} />
-          ))}
-        </ul>
+          {isExpanded && isOpen && hasChildren && (
+            <ul className="pl-8 space-y-1">
+              {item.children
+                ?.filter((child) => !!child.path)
+                .map((child) => (
+                  <li key={child.id}>
+                    <Link
+                      to={child.path as string}
+                      className={`
+                        block px-3 py-2 rounded-md transition-colors text-sm
+                        ${
+                          location.pathname === child.path
+                            ? "bg-blue-50 text-blue-700"
+                            : "hover:bg-gray-100"
+                        }
+                      `}
+                    >
+                      {child.label}
+                    </Link>
+                  </li>
+                ))}
+            </ul>
+          )}
+        </div>
+      ) : (
+        <Link
+          to={item.path ?? "#"}
+          className={`
+            flex items-center px-3 py-2 rounded-md transition-colors
+            ${isActive ? "bg-blue-50 text-blue-700" : "hover:bg-gray-100"}
+          `}
+        >
+          <span className="mr-3">{item.icon}</span>
+          {isExpanded && (
+            <span className="transition-opacity duration-200">
+              {item.label}
+            </span>
+          )}
+        </Link>
       )}
     </li>
   );

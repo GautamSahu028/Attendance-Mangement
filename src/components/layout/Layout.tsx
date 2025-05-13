@@ -1,19 +1,15 @@
-import React, { ReactNode } from 'react';
-import Sidebar from '../sidebar/Sidebar';
+import { Outlet } from "react-router-dom";
+import Sidebar from "../sidebar/Sidebar";
 
-interface LayoutProps {
-  children: ReactNode;
-}
-
-const Layout: React.FC<LayoutProps> = ({ children }) => {
+const Layout = () => {
   return (
     <div className="flex h-screen bg-gray-50">
       <Sidebar />
-      <main className="flex-1 overflow-auto p-6">
-        <div className="max-w-7xl mx-auto">
-          {children}
-        </div>
-      </main>
+      <div className="flex-1 overflow-auto">
+        <main className="pt-16 md:pt-0">
+          <Outlet />
+        </main>
+      </div>
     </div>
   );
 };
